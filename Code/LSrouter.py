@@ -194,4 +194,5 @@ class LSrouter(Router):
                         break
 
     def debug_string(self):
-        raise NotImplementedError
+        #raise NotImplementedError
+        return

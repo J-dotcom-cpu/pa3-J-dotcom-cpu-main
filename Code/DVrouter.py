@@ -162,4 +162,5 @@ class DVrouter(Router):
             self._broadcast_dv()
 
     def debug_string(self):
-        raise NotImplementedError
+        #raise NotImplementedError
+        return
