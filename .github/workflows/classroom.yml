@@ -1,0 +1,82 @@
+name: PA3 Autograding Runner
+
+on:
+  push: 
+    branches:
+      - main
+    paths:
+      - Code/LSrouter.py 
+      - Code/DVrouter.py
+  workflow_dispatch:
+  repository_dispatch:
+permissions:
+  checks: write
+  actions: read
+  contents: read
+
+env:
+  ASSIGNMENT_NUMBER: pa3  # Define assignment number here
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+      - run: |
+          pip install -r ./Code/requirements.txt
+          pip install gdown
+
+      - name: Cache Code.zip
+        uses: actions/cache@v4
+        id: cache-code
+        with:
+          path: ./code_folder/Code_${{ env.ASSIGNMENT_NUMBER }}.zip
+          key: ${{ runner.os }}-gdown-${{ env.ASSIGNMENT_NUMBER}}
+          restore-keys: |
+            ${{ runner.os }}-gdown-${{ env.ASSIGNMENT_NUMBER}}
+
+      - name: Fetch Code Folder if Cache Miss
+        if: steps.cache-code.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ./code_folder
+          gdown 1VXSXCQgqbniumX9lWbX1nwcW66AtRWf7 -O ./code_folder/Code_${{ env.ASSIGNMENT_NUMBER }}.zip
+
+      - name: Extract Code Folder
+        run: |
+          unzip ./code_folder/Code_${{ env.ASSIGNMENT_NUMBER }}.zip -d ./code_folder
+
+      - name: Replace Student Files
+        run: |
+          cp -f Code/LSrouter.py ./code_folder/Code_copy
+          cp -f Code/DVrouter.py ./code_folder/Code_copy
+
+      - name: Run TestRouter
+        run: |
+          cd ./code_folder/Code_copy
+          for i in 1 2 3; do
+            echo "Run #$i"
+            python runAll.py > run_output.txt && cat run_output.txt || echo "Test cases failed during workflow run"
+          done
+
+                                                  
+      - name: Run ReviewCodeQuality
+        run: |
+          cd ./code_folder/Code_copy
+          python ReviewCodeQuality.py LSrouter.py DVrouter.py >> run_output.txt && cat run_output.txt                                               
+
+      - name: Upload Test Results
+        if: always() 
+        # Always upload test results even if the job fails
+        uses: actions/upload-artifact@v4
+        with:
+          name: run_output.txt
+          path: ./code_folder/Code_copy/run_output.txt

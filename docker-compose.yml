@@ -1,0 +1,13 @@
+services:
+  netcen-spring-2025:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: netcen-pa3-image
+    volumes:
+      - ./Code:/home/netcen_pa3
+    user: root
+    container_name: netcen_pa3
+    entrypoint: /bin/bash
+    stdin_open: true
+    tty: true

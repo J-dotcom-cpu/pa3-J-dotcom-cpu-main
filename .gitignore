@@ -1,0 +1,14 @@
+.DS_*
+.env
+.vscode/
+outputs/
+inputs/
+logs/
+**/pycache/
+**/__pycache__/
+**/.pytest_cache/
+artifact*/
+mysol*/
+pa3_env/
+Assignment*/
+output*/
